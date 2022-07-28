@@ -1,0 +1,32 @@
+import os
+from random import Random
+
+from SingleValueJSONDB import SingleValueJSONDB
+
+
+class PromptManager:
+    active_prompt = None
+
+    def __init__(self):
+        self.prompt_db = SingleValueJSONDB("prompts")
+        self.load_active_prompt()
+
+    def load_active_prompt(self):
+        if os.path.exists("data/active_prompt"):
+            with open("data/active_prompt", "r") as file:
+                self.active_prompt = file.readline().strip()
+                file.close()
+        else:
+            self.active_prompt = None
+
+    def decide_prompt(self):
+        if self.active_prompt is None:
+            rnd = Random()
+            self.active_prompt = self.prompt_db.get(rnd.randint(0, self.prompt_db.get_size() - 1))
+            with open("data/active_prompt", "w") as file:
+                file.write(self.active_prompt)
+                file.close()
+        return self.active_prompt
+
+    def is_prompt_active(self):
+        return self.active_prompt is not None

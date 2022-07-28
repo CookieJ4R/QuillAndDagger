@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script>
+        let scheduled_func = null
+        let test = new Date({{ target_date|tojson }});
+
+        function calculate_timer() {
+
+            let now = new Date().getTime();
+
+            let distance = test.getTime() - now;
+
+            // Time calculations for days, hours, minutes and seconds
+            let days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("demo").innerHTML = days + "d " + hours + "h "
+                + minutes + "m " + seconds + "s ";
+
+            if (distance < 0) {
+                clearInterval(scheduled_func);
+                window.location.href = "/"
+                document.getElementById("demo").innerHTML = "Writing phase has finished!";
+            }
+        }
+        window.onload=function (){
+        calculate_timer();
+        // Update the count down every 1 second
+        scheduled_func = setInterval(calculate_timer, 1000);
+        }
+
+    </script>
+</head>
+<body>
+<h2>You are: {{ alias }}</h2>
+<h3>Prompt: {{ prompt }}</h3><br>
+<h4 id="demo"></h4>
+<form method="post" action="/writing_phase" enctype = "multipart/form-data">
+    <input type="file" name="submission" accept="application/pdf">
+    <input type="submit" value="Submit" name="submit_story"/>
+</form>
+</body>
+</html>
