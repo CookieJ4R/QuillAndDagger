@@ -40,7 +40,4 @@ class JSONDB:
         return value in self.database.values()
 
     def does_key_exist(self, key):
-        print(key)
-        print(self.database)
-        print(key in self.database)
         return key in self.database

@@ -1,10 +1,11 @@
 import os
+import time
 from datetime import datetime
 from os.path import basename
 from threading import Thread
 from zipfile import ZipFile
 
-import argparse as argparse
+import configparser
 import pytz
 from flask import Flask, session, send_from_directory, request, redirect, render_template, send_file
 from waitress import serve
@@ -26,6 +27,10 @@ app = Flask(__name__, template_folder='../templates')
 app.secret_key = "ijwo0hDFj2JKD7sf09hfoinin2"
 app.config['STATIC_FOLDER'] = "../static_without_route"
 app.config['SUBMISSIONS_FOLDER'] = "../submissions"
+
+
+# TODO add better logging
+# TODO unify configparser usage
 
 
 @app.route("/preparation_phase")
@@ -141,35 +146,36 @@ def authenticate():
 
 if __name__ == '__main__':
     prompt_manager = PromptManager()
-    argparse = argparse.ArgumentParser()
-    argparse.add_argument("--preparation_phase_time_in_days", type=int, default=DEFAULT_PREPARATION_STAGE_TIME_IN_DAYS)
-    argparse.add_argument("--writing_phase_time_in_days", type=int, default=DEFAULT_WRITING_STAGE_TIME_IN_DAYS)
-    argparse.add_argument("--review_phase_time_in_days", type=int, default=DEFAULT_REVIEW_STAGE_TIME_IN_DAYS)
-    argparse.add_argument("--initial_state", type=int, default=0)
-
-    args = argparse.parse_args()
+    config = configparser.ConfigParser()
+    config.read("data/app_config.ini")
     state_machine = QuillAndDaggerStateMachine(prompt_manager,
-                                               args.preparation_phase_time_in_days,
-                                               args.writing_phase_time_in_days,
-                                               args.review_phase_time_in_days)
-    if args.initial_state:
-        if args.initial_state == 0:
-            state_machine.current_state = PREPARATION_STAGE
-        elif args.initial_state == 1:
-            if not prompt_manager.is_prompt_active():
-                prompt_manager.decide_prompt()
-            state_machine.current_state = WRITING_STAGE
-        elif args.initial_state == 2:
-            state_machine.current_state = REVIEW_STAGE
-        elif args.initial_state == 3:
-            state_machine.current_state = RESULT_STAGE
+                                               config["STATE_MACHINE"]["preparation_phase_end"],
+                                               config["STATE_MACHINE"]["writing_phase_end"],
+                                               config["STATE_MACHINE"]["review_phase_end"],
+                                               pytz.timezone(config["STATE_MACHINE"]["timezone"]))
+
+    initial_state = int(config["STATE_MACHINE"]["initial_state"])
+    if initial_state == 0:
+        state_machine.current_state = PREPARATION_STAGE
+    elif initial_state == 1:
+        if not prompt_manager.is_prompt_active():
+            prompt_manager.decide_prompt()
+        state_machine.current_state = WRITING_STAGE
+    elif initial_state == 2:
+        state_machine.current_state = REVIEW_STAGE
+    elif initial_state == 3:
+        state_machine.current_state = RESULT_STAGE
 
     uuid_db = SingleValueJSONDB("uuid_db")
     alias_db = JSONDB("alias_db")
     review_db = JSONDB("review_db")
     review_completion_db = SingleValueJSONDB("review_completion_db")
-    server_thread = Thread(target=serve, args=[app], kwargs={'host': '127.0.0.1', 'port': 5000}, daemon=False)
+    server_thread = Thread(target=serve, args=[app], kwargs={'host': config["APP"]["ip"],
+                                                             'port': int(config["APP"]["port"])}, daemon=True)
     server_thread.start()
     alias_generator = AliasGenerator()
-    date = datetime.now(pytz.timezone("Europe/Berlin"))
+    date = datetime.now(pytz.timezone(config["STATE_MACHINE"]["timezone"]))
     state_machine.schedule_state_switch()
+    while True:
+        print("Server is in result phase. Can be exited anytime with Ctrl+C. This message repeats every 5 minutes.")
+        time.sleep(60*5)
