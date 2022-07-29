@@ -1,3 +1,4 @@
+import logging
 from random import Random
 
 
@@ -7,6 +8,7 @@ class AliasGenerator:
         self.praefix_list = self.load_praefix_list()
         self.suffix_list = self.load_suffix_list()
         self.rnd = Random()
+        self.logger = logging.getLogger("QuillAndDagger")
 
     @staticmethod
     def load_praefix_list():
@@ -22,9 +24,9 @@ class AliasGenerator:
         alias = None
         while alias is None and alias not in existing_aliases:
             praefix = self.praefix_list[self.rnd.randrange(0, len(self.praefix_list) - 1)]
-            print("chosen praefix %s" % praefix)
+            self.logger.debug(f"chosen praefix {praefix}")
             suffix = self.suffix_list[self.rnd.randrange(0, len(self.suffix_list) - 1)]
-            print("chosen suffix %s" % suffix)
+            self.logger.debug(f"chosen suffix {suffix}")
             alias = praefix + suffix
-            print("generated alias %s" % alias)
+            self.logger.debug(f"generated alias {alias}")
         return alias

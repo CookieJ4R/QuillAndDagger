@@ -1,13 +1,14 @@
+import logging
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from QADState import QADState
 
 
-PREPARATION_STAGE = QADState()
-WRITING_STAGE = QADState()
-REVIEW_STAGE = QADState()
-RESULT_STAGE = QADState()
+PREPARATION_STAGE = QADState("PREPARATION_STAGE")
+WRITING_STAGE = QADState("WRITING_STAGE")
+REVIEW_STAGE = QADState("REVIEW_STAGE")
+RESULT_STAGE = QADState("RESULT_STAGE")
 
 state_map = {
     PREPARATION_STAGE: WRITING_STAGE,
@@ -23,6 +24,7 @@ class QuillAndDaggerStateMachine:
     def __init__(self, prompt_manager, preparation_phase_time_in_days,
                  writing_phase_time_in_days,
                  review_phase_time_in_days, timezone):
+        self.logger = logging.getLogger("QuillAndDagger")
         self.prompt_manager = prompt_manager
         self.timezone = timezone
         self.time_map = {
@@ -33,14 +35,15 @@ class QuillAndDaggerStateMachine:
 
     def switch_state(self):
         if self.current_state in state_map:
-            print("Transitioning state")
+            self.logger.info(f"Transitioning from state {self.current_state} to state {state_map[self.current_state]}")
             self.current_state = state_map[self.current_state]
             self.schedule_state_switch()
 
     def schedule_state_switch(self):
-        if self.current_state == WRITING_STAGE:
-            self.prompt_manager.decide_prompt()
-        self.start_timed_stage_switch(self.time_map[self.current_state])
+        if self.current_state != RESULT_STAGE:
+            if self.current_state == WRITING_STAGE:
+                self.prompt_manager.decide_prompt()
+            self.start_timed_stage_switch(self.time_map[self.current_state])
 
     def get_current_state(self):
         return self.current_state

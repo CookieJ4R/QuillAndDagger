@@ -1,4 +1,6 @@
+import logging
 import os
+import sys
 import time
 from datetime import datetime
 from os.path import basename
@@ -19,18 +21,10 @@ from QuillAndDaggerStateMachine import QuillAndDaggerStateMachine, PREPARATION_S
 from SingleValueJSONDB import SingleValueJSONDB
 from util import is_authenticated_session, get_list_of_submission_names_for, build_results
 
-DEFAULT_PREPARATION_STAGE_TIME_IN_DAYS = 7
-DEFAULT_WRITING_STAGE_TIME_IN_DAYS = 14
-DEFAULT_REVIEW_STAGE_TIME_IN_DAYS = 7
-
 app = Flask(__name__, template_folder='../templates')
 app.secret_key = "ijwo0hDFj2JKD7sf09hfoinin2"
-app.config['STATIC_FOLDER'] = "../static_without_route"
-app.config['SUBMISSIONS_FOLDER'] = "../submissions"
 
-
-# TODO add better logging
-# TODO unify configparser usage
+logger = logging.getLogger("QuillAndDagger")
 
 
 @app.route("/preparation_phase")
@@ -54,7 +48,7 @@ def build_writing_stage_page():
             if state_machine.get_current_state() != WRITING_STAGE:
                 return "Writing phase is already finished. Your submission as rejected - Please reload the page!"
             f = request.files['submission']
-            f.save(os.path.join(app.config['SUBMISSIONS_FOLDER'], secure_filename(session["alias"] + ".pdf")))
+            f.save(os.path.join(config["APP"]["submission_folder"], secure_filename(session["alias"] + ".pdf")))
     return render_template("writing_phase.html", alias=session['alias'], prompt=prompt_manager.active_prompt,
                            target_date=state_machine.get_current_time_target())
 
@@ -74,7 +68,7 @@ def build_review_stage_page():
         review_completion_db.put(session['alias'])
         return render_template("review_phase_completed.html", alias=session['alias'],
                                target_date=state_machine.get_current_time_target())
-    list_of_submissions_to_review = get_list_of_submission_names_for(app.config['SUBMISSIONS_FOLDER'], session)
+    list_of_submissions_to_review = get_list_of_submission_names_for(config["APP"]["submission_folder"], session)
     return render_template("review_phase.html", alias=session['alias'],
                            target_date=state_machine.get_current_time_target(),
                            submission_list=list_of_submissions_to_review)
@@ -91,7 +85,7 @@ def build_result_stage_page():
 
 
 def build_authentication_page():
-    return send_from_directory(app.config['STATIC_FOLDER'], "authentication.html")
+    return render_template("authentication.html")
 
 
 @app.route('/download_files')
@@ -100,13 +94,13 @@ def download_files():
         return redirect("/authenticate")
     if state_machine.get_current_state() != REVIEW_STAGE:
         return redirect("/")
-    with ZipFile(app.config['SUBMISSIONS_FOLDER'] + '/SubmissionsFor' + session['alias'] + '.zip', 'w') \
+    with ZipFile(config["APP"]["submission_folder"] + '/SubmissionsFor' + session['alias'] + '.zip', 'w') \
             as zipObj:
-        for file in os.listdir(app.config['SUBMISSIONS_FOLDER']):
+        for file in os.listdir(config["APP"]["submission_folder"]):
             if file.endswith(".pdf") and not file.startswith(session['alias']):
-                file_path = os.path.join(app.config['SUBMISSIONS_FOLDER'], file)
+                file_path = os.path.join(config["APP"]["submission_folder"], file)
                 zipObj.write(file_path, basename(file_path))
-    return send_file(os.path.join(app.config['SUBMISSIONS_FOLDER'], 'SubmissionsFor' + session['alias'] + '.zip'),
+    return send_file(os.path.join(config["APP"]["submission_folder"], 'SubmissionsFor' + session['alias'] + '.zip'),
                      download_name='submissions.zip', as_attachment=True)
 
 
@@ -131,20 +125,24 @@ def authenticate():
     if request.method == 'POST':
         if request.form.get('Authenticate') == 'Authenticate':
             uuid = request.form.get("uid").strip()
-            print(uuid)
             if uuid_db.has_value(uuid):
                 if alias_db.does_key_exist(uuid):
-                    session['alias'] = alias_db.get(uuid)
+                    alias = alias_db.get(uuid)
+                    logger.info(f"Authenticated! {alias} logged in!")
+                    session['alias'] = alias
                 else:
-                    print("generating alias")
+                    logger.info("User without alias tries to authenticate. Generating new alias...")
                     alias = alias_generator.generate_alias(alias_db.database.values())
                     alias_db.put(uuid, alias)
                     session['alias'] = alias
                 return redirect("/")
+            else:
+                logger.warning("Someone tried to authenticate with an unknown UUID")
     return build_authentication_page()
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
     prompt_manager = PromptManager()
     config = configparser.ConfigParser()
     config.read("data/app_config.ini")
@@ -170,12 +168,17 @@ if __name__ == '__main__':
     alias_db = JSONDB("alias_db")
     review_db = JSONDB("review_db")
     review_completion_db = SingleValueJSONDB("review_completion_db")
-    server_thread = Thread(target=serve, args=[app], kwargs={'host': config["APP"]["ip"],
-                                                             'port': int(config["APP"]["port"])}, daemon=True)
+    server_thread = Thread(target=serve, args=[app], kwargs={'host': config["WEBSERVER"]["ip"],
+                                                             'port': int(config["WEBSERVER"]["port"])}, daemon=True)
     server_thread.start()
     alias_generator = AliasGenerator()
     date = datetime.now(pytz.timezone(config["STATE_MACHINE"]["timezone"]))
     state_machine.schedule_state_switch()
     while True:
-        print("Server is in result phase. Can be exited anytime with Ctrl+C. This message repeats every 5 minutes.")
-        time.sleep(60*5)
+        try:
+            logger.info("Server is in result phase. Can be exited anytime with Ctrl+C. This message repeats every 5 "
+                        "minutes.")
+            time.sleep(60 * 5)
+        except KeyboardInterrupt:
+            logger.info("Shutting down QuillAndDagger!")
+            sys.exit()
