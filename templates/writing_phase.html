@@ -28,10 +28,11 @@
                 document.getElementById("demo").innerHTML = "Writing phase has finished!";
             }
         }
-        window.onload=function (){
-        calculate_timer();
-        // Update the count down every 1 second
-        scheduled_func = setInterval(calculate_timer, 1000);
+
+        window.onload = function () {
+            calculate_timer();
+            // Update the count down every 1 second
+            scheduled_func = setInterval(calculate_timer, 1000);
         }
 
     </script>
@@ -40,7 +41,7 @@
 <h2>You are: {{ alias }}</h2>
 <h3>Prompt: {{ prompt }}</h3><br>
 <h4 id="demo"></h4>
-<form method="post" action="/writing_phase" enctype = "multipart/form-data">
+<form method="post" action="/writing_phase" enctype="multipart/form-data">
     <input type="file" name="submission" accept="application/pdf">
     <input type="submit" value="Submit" name="submit_story"/>
 </form>

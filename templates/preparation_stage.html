@@ -25,7 +25,7 @@
             let seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
             document.getElementById("timer").innerHTML = days + " Days " + hours + " Hours<br>" +
-                + minutes + " Minutes " + seconds + " Seconds";
+                +minutes + " Minutes " + seconds + " Seconds";
 
             if (distance < 0) {
                 clearInterval(scheduled_func);
@@ -33,10 +33,11 @@
                 document.getElementById("timer").innerHTML = "Quill and Dagger is live! Reload the site!";
             }
         }
-        window.onload=function (){
-        calculate_timer();
-        // Update the count down every 1 second
-        scheduled_func = setInterval(calculate_timer, 1000);
+
+        window.onload = function () {
+            calculate_timer();
+            // Update the count down every 1 second
+            scheduled_func = setInterval(calculate_timer, 1000);
         }
 
     </script>
@@ -60,13 +61,14 @@
             padding-bottom: 40px;
             background-color: #1f2026;
         }
-                #center {
+
+        #center {
             width: 100%;
             max-width: 400px;
             padding: 15px;
             margin: 0 auto;
             border: 5px solid;
-            border-image: linear-gradient(90deg, rgba(255,236,0,1), rgba(106,0,255,1)) 1;
+            border-image: linear-gradient(90deg, rgba(255, 236, 0, 1), rgba(106, 0, 255, 1)) 1;
             border-radius: 15px;
             text-align: center;
         }
@@ -76,7 +78,7 @@
 <div id="center">
     <h2 style="color: white" class="mb-5">Welcome {{ alias }}!</h2>
     <h3 style="color: white" class="mb-3">Quill and Dagger starts in:</h3>
-    <h3 style="color: white" id="timer">00:22:00</h3>
+    <h3 style="color: white" id="timer"></h3>
 </div>
 
 </body>
