@@ -100,8 +100,8 @@ def download_files():
             if file.endswith(".pdf") and not file.startswith(session['alias']):
                 file_path = os.path.join(config["APP"]["submission_folder"], file)
                 zipObj.write(file_path, basename(file_path))
-    return send_file(os.path.join(config["APP"]["submission_folder"], 'SubmissionsFor' + session['alias'] + '.zip'),
-                     download_name='submissions.zip', as_attachment=True)
+    return send_file("../" + os.path.join(config["APP"]["submission_folder"], 'SubmissionsFor' + session['alias'] +
+                                          '.zip'), download_name='submissions.zip', as_attachment=True)
 
 
 @app.route('/')

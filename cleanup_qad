@@ -1,0 +1,14 @@
+#! /bin/bash
+
+# Simple script to remove all session files and submissions for a Quill and Dagger Session
+# Should be run once before starting a new Quill and Dagger Competition.
+
+cd data
+
+rm review_db
+rm review_completion_db
+rm alias_db
+rm active_prompt
+
+cd ..
+rm submissions/*

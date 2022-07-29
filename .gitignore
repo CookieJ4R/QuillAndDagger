@@ -133,7 +133,6 @@ dmypy.json
 *.zip
 data/active_prompt
 data/alias_db
-data/prompts
 data/review_completion_db
 data/review_db
 data/uuid_db
