@@ -9,7 +9,7 @@ from zipfile import ZipFile
 
 import configparser
 import pytz
-from flask import Flask, session, send_from_directory, request, redirect, render_template, send_file
+from flask import Flask, session, request, redirect, render_template, send_file
 from waitress import serve
 from werkzeug.utils import secure_filename
 
@@ -145,17 +145,34 @@ def authenticate():
     return build_authentication_page()
 
 
+def _setup_logger():
+    formatter = logging.Formatter('[%(asctime)s.%(msecs)d]%(name)s|%(levelname)s|%(message)s', datefmt='%H:%M:%S')
+    logger.setLevel(logging.DEBUG)
+
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setLevel(logging.DEBUG)
+    stdout_handler.setFormatter(formatter)
+
+    file_handler = logging.FileHandler('q&d.log')
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(formatter)
+
+    logger.addHandler(file_handler)
+    logger.addHandler(stdout_handler)
+
+    logger.info("Logger setup complete")
+
+
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    prompt_manager = PromptManager()
+    _setup_logger()
     config = configparser.ConfigParser()
     config.read("data/app_config.ini")
+    prompt_manager = PromptManager()
     state_machine = QuillAndDaggerStateMachine(prompt_manager,
                                                config["STATE_MACHINE"]["preparation_phase_end"],
                                                config["STATE_MACHINE"]["writing_phase_end"],
                                                config["STATE_MACHINE"]["review_phase_end"],
                                                pytz.timezone(config["STATE_MACHINE"]["timezone"]))
-
     initial_state = int(config["STATE_MACHINE"]["initial_state"])
     if initial_state == 0:
         state_machine.current_state = PREPARATION_STAGE
@@ -173,10 +190,10 @@ if __name__ == '__main__':
     review_db = JSONDB("review_db")
     review_completion_db = SingleValueJSONDB("review_completion_db")
     server_thread = Thread(target=serve, args=[app], kwargs={'host': config["WEBSERVER"]["ip"],
-                                                             'port': int(config["WEBSERVER"]["port"])}, daemon=True)
+                                                             'port': int(config["WEBSERVER"]["port"]),
+                                                             '_quiet': True}, daemon=True)
     server_thread.start()
     alias_generator = AliasGenerator()
-    date = datetime.now(pytz.timezone(config["STATE_MACHINE"]["timezone"]))
     state_machine.schedule_state_switch()
     while True:
         try:
