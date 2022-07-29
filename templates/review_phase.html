@@ -89,7 +89,7 @@
         </div>
     </div>`
             )
-            document.getElementById("submission_review_list").innerHTML += `<input type="submit" value="Submit">`
+            document.getElementById("submission_review_list").innerHTML += `<button class="btn btn-lg btn-secondary btn-block mt-2" type="submit" value="Submit">>submit</button>`
         }
     </script>
 </head>
@@ -99,7 +99,7 @@
     <h3 style="color: white" class="mb-1">Review phase</h3><br>
     <a href="/download_files" target="_blank" class="btn btn-secondary mb-5">Download Files</a>
     <h3 style="color: white" class="mb-3">Review phase concludes in:</h3>
-    <h3 style="color: white" class="mb-2" id="timer"></h3>
+    <h3 style="color: white" class="mb-5" id="timer"></h3>
     <form method="post" action="/review_phase" id="submission_review_list">
     </form>
 </div>
