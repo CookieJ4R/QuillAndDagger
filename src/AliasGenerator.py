@@ -22,7 +22,7 @@ class AliasGenerator:
 
     def generate_alias(self, existing_aliases) -> str:
         alias = None
-        while alias is None and alias not in existing_aliases:
+        while alias is None or alias in existing_aliases:
             praefix = self.praefix_list[self.rnd.randrange(0, len(self.praefix_list) - 1)]
             self.logger.debug(f"chosen praefix {praefix}")
             suffix = self.suffix_list[self.rnd.randrange(0, len(self.suffix_list) - 1)]
