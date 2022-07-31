@@ -11,6 +11,8 @@ def is_authenticated_session(session) -> bool:
 
 def get_list_of_submission_names_for(path, session) -> list:
     file_list = []
+    if not os.path.exists(path):
+        return []
     for file in os.listdir(path):
         if file.endswith(".pdf") and not file.startswith(session['alias']):
             file_list.append(file[0:-4])
@@ -27,3 +29,7 @@ def build_results(review_db: JSONDB) -> dict:
         final_score = final_score / len(scores)
         results[review] = final_score
     return dict(sorted(results.items(), key=lambda item: item[1], reverse=True))
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() == "pdf"

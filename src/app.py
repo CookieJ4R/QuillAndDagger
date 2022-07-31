@@ -19,7 +19,7 @@ from PromptManager import PromptManager
 from QuillAndDaggerStateMachine import QuillAndDaggerStateMachine, PREPARATION_STAGE, WRITING_STAGE, REVIEW_STAGE, \
     RESULT_STAGE
 from SingleValueJSONDB import SingleValueJSONDB
-from util import is_authenticated_session, get_list_of_submission_names_for, build_results
+from util import allowed_file, is_authenticated_session, get_list_of_submission_names_for, build_results
 
 app = Flask(__name__, template_folder='../templates')
 app.secret_key = "ijwo0hDFj2JKD7sf09hfoinin2"
@@ -48,9 +48,17 @@ def build_writing_stage_page():
             if state_machine.get_current_state() != WRITING_STAGE:
                 return "Writing phase is already finished. Your submission as rejected - Please reload the page!"
             f = request.files['submission']
+            if not allowed_file(f.filename):
+                return render_template("writing_phase.html", alias=session['alias'], prompt=prompt_manager.active_prompt, 
+                target_date=state_machine.get_current_time_target(), notification_id=2)
+            if not os.path.exists(config["APP"]["submission_folder"]):
+                os.mkdir(config["APP"]["submission_folder"])
             f.save(os.path.join(config["APP"]["submission_folder"], secure_filename(session["alias"] + ".pdf")))
+    if os.path.exists(os.path.join(config["APP"]["submission_folder"], secure_filename(session["alias"] + ".pdf"))):
+        return render_template("writing_phase.html", alias=session['alias'], prompt=prompt_manager.active_prompt,
+                           target_date=state_machine.get_current_time_target(), notification_id=1)
     return render_template("writing_phase.html", alias=session['alias'], prompt=prompt_manager.active_prompt,
-                           target_date=state_machine.get_current_time_target())
+                           target_date=state_machine.get_current_time_target(), notification_id=0)
 
 
 @app.route("/review_phase", methods=['GET', 'POST'])
@@ -94,6 +102,8 @@ def download_files():
         return redirect("/authenticate")
     if state_machine.get_current_state() != REVIEW_STAGE:
         return redirect("/")
+    if not os.path.exists(config["APP"]["submission_folder"]):
+        return "No submissions found!"
     with ZipFile(config["APP"]["submission_folder"] + '/SubmissionsFor' + session['alias'] + '.zip', 'w') \
             as zipObj:
         for file in os.listdir(config["APP"]["submission_folder"]):

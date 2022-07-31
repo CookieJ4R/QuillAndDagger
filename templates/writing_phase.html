@@ -3,6 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <title>Writing</title>
+    <meta charset="UTF-8">
+    <title>Review</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa"
+            crossorigin="anonymous"></script>
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            display: -ms-flexbox;
+            display: -webkit-box;
+            display: flex;
+            -ms-flex-align: center;
+            -ms-flex-pack: center;
+            -webkit-box-align: center;
+            align-items: center;
+            -webkit-box-pack: center;
+            justify-content: center;
+            padding-top: 40px;
+            padding-bottom: 40px;
+            background-color: #1f2026;
+        }
+
+        #center {
+            width: 100%;
+            max-width: 550px;
+            padding: 15px;
+            margin: 0 auto;
+            border: 5px solid;
+            border-image: linear-gradient(90deg, rgba(255, 236, 0, 1), rgba(106, 0, 255, 1)) 1;
+            border-radius: 15px;
+            text-align: center;
+        }
+        </style>
     <script>
         let scheduled_func = null
         let test = new Date({{ target_date|tojson }});
@@ -19,13 +58,13 @@
             let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             let seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-            document.getElementById("demo").innerHTML = days + "d " + hours + "h "
+            document.getElementById("timer").innerHTML = days + "d " + hours + "h "
                 + minutes + "m " + seconds + "s ";
 
             if (distance < 0) {
                 clearInterval(scheduled_func);
                 window.location.href = "/"
-                document.getElementById("demo").innerHTML = "Writing phase has finished!";
+                document.getElementById("timer").innerHTML = "Writing phase has finished!";
             }
         }
 
@@ -33,17 +72,40 @@
             calculate_timer();
             // Update the count down every 1 second
             scheduled_func = setInterval(calculate_timer, 1000);
+            notification = {{ notification_id }}
+            switch (notification){
+                case 0:
+                    break;
+                case 1:
+                    document.getElementById("notification_text").innerHTML = "<h5 style='color: lime' class='mb-1'>" +
+                        "You have already submitted a Story.</h5><h5 style='color: lime' class='mb-4'>Submitting again will " +
+                        "override your previous entry!</h5>"
+                    break;
+                case 2:
+                    document.getElementById("notification_text").innerHTML = "<h5 style='color: red' class='mb-4'>" +
+                        "Please submitt a .pdf file!</h5>"
+                    break;
+            }
         }
 
     </script>
 </head>
 <body>
-<h2>You are: {{ alias }}</h2>
-<h3>Prompt: {{ prompt }}</h3><br>
-<h4 id="demo"></h4>
-<form method="post" action="/writing_phase" enctype="multipart/form-data">
-    <input type="file" name="submission" accept="application/pdf">
-    <input type="submit" value="Submit" name="submit_story"/>
-</form>
-</body>
+    <div id="center">
+        <h2 style="color: white" class="mb-4">{{ alias }}</h2>
+        <h3 style="color: white" class="mb-1">Prompt: {{ prompt }}</h3><br>
+        <h3 style="color: white" class="mb-3">Writing phase concludes in:</h3>
+        <h3 style="color: white" class="mb-3" id="timer"></h3>
+        <div class="container">
+        <form method="post" action="/writing_phase" enctype="multipart/form-data">
+            <div class="mb-4" id="center">
+                <input type="file" class="form-control" name="submission" accept="application/pdf">
+              </div>
+              <div id="notification_text">
+              </div>
+              <button class="btn btn-secondary" type="submit" value="Submit" name="submit_story">Submit</button>
+        </form>
+    </div>
+    </div>
+    </body>
 </html>
