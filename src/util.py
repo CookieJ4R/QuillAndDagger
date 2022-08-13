@@ -26,9 +26,10 @@ def build_results(review_db: JSONDB) -> dict:
         final_score = 0
         for score in scores:
             final_score += score
-        final_score = final_score / len(scores)
+        final_score = round(final_score / len(scores), 2)
         results[review] = final_score
     return dict(sorted(results.items(), key=lambda item: item[1], reverse=True))
+
 
 def allowed_file(filename):
     return '.' in filename and \

@@ -96,10 +96,13 @@
 <body>
 <div id="center">
     <h2 style="color: white" class="mb-4">{{ alias }}</h2>
-    <h3 style="color: white" class="mb-1">Review phase</h3><br>
+    <h3 style="color: white" class="mb-2">Review phase</h3><br>
+    <h4 style="color: white" class="mb-1">Please review the following files:</h4><br>
     <a href="/download_files" target="_blank" class="btn btn-secondary mb-5">Download Files</a>
     <h3 style="color: white" class="mb-3">Review phase concludes in:</h3>
     <h3 style="color: white" class="mb-5" id="timer"></h3>
+    <h4 style="color: white">Please review all submissions at once!</h4>
+    <h4 style="color: white" class="mb-1">Ratings range from 1 (bad) to 5 (amazing)</h4><br>
     <form method="post" action="/review_phase" id="submission_review_list">
     </form>
 </div>
