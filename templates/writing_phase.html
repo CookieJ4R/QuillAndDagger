@@ -10,38 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa"
             crossorigin="anonymous"></script>
-    <style>
-        html,
-        body {
-            height: 100%;
-        }
-
-        body {
-            display: -ms-flexbox;
-            display: -webkit-box;
-            display: flex;
-            -ms-flex-align: center;
-            -ms-flex-pack: center;
-            -webkit-box-align: center;
-            align-items: center;
-            -webkit-box-pack: center;
-            justify-content: center;
-            padding-top: 40px;
-            padding-bottom: 40px;
-            background-color: #1f2026;
-        }
-
-        #center {
-            width: 100%;
-            max-width: 550px;
-            padding: 15px;
-            margin: 0 auto;
-            border: 5px solid;
-            border-image: linear-gradient(90deg, rgba(255, 236, 0, 1), rgba(106, 0, 255, 1)) 1;
-            border-radius: 15px;
-            text-align: center;
-        }
-        </style>
+    <link rel="stylesheet" href="qad.css">
     <script>
         let scheduled_func = null
         let test = new Date({{ target_date|tojson }});
@@ -92,10 +61,10 @@
 </head>
 <body>
     <div id="center">
-        <h2 style="color: white" class="mb-4">{{ alias }}</h2>
-        <h3 style="color: white" class="mb-1">Prompt: {{ prompt }}</h3><br>
-        <h3 style="color: white" class="mb-3">Writing phase concludes in:</h3>
-        <h3 style="color: white" class="mb-3" id="timer"></h3>
+        <h2 class="mb-4">{{ alias }}</h2>
+        <h3 class="mb-1">Prompt: {{ prompt }}</h3><br>
+        <h3 class="mb-3">Writing phase concludes in:</h3>
+        <h3 class="mb-3" id="timer"></h3>
         <div class="container">
         <form method="post" action="/writing_phase" enctype="multipart/form-data">
             <div class="mb-4" id="center">

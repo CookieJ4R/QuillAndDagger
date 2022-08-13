@@ -1,6 +1,7 @@
 #! /bin/bash
 
 # Simple script to remove all session files and submissions for a Quill and Dagger Session
+# Before clearing the submissions directory it will be saved as a zip file which has to be manually removed if wanted
 # Should be run once before starting a new Quill and Dagger Competition.
 
 cd data
@@ -11,4 +12,6 @@ rm alias_db
 rm active_prompt
 
 cd ..
+timestamp=$(date +%Y-%m-%d_%H-%M-%S)
+zip -r submissions_backup_$timestamp.zip submissions/*
 rm submissions/*
