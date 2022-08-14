@@ -1,6 +1,9 @@
+import logging
 import os
 
 from JSONDB import JSONDB
+
+logger = logging.getLogger("QuillAndDagger")
 
 
 def is_authenticated_session(session) -> bool:
@@ -10,6 +13,7 @@ def is_authenticated_session(session) -> bool:
 
 
 def get_list_of_submission_names_for(path, session) -> list:
+    logger.info(f"Getting submission names for {session['alias']}...")
     file_list = []
     if not os.path.exists(path):
         return []
@@ -20,6 +24,7 @@ def get_list_of_submission_names_for(path, session) -> list:
 
 
 def build_results(review_db: JSONDB) -> dict:
+    logger.info("Building results...")
     results = {}
     for review in review_db.database:
         scores = review_db.get(review)

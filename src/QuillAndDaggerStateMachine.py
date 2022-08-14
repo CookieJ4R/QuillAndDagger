@@ -41,6 +41,7 @@ class QuillAndDaggerStateMachine:
 
     def schedule_state_switch(self):
         if self.current_state != RESULT_STAGE:
+            self.logger.info(f"Scheduling next state switch to {self.time_map[self.current_state]}")
             if self.current_state == WRITING_STAGE:
                 self.prompt_manager.decide_prompt()
             self.start_timed_stage_switch(self.time_map[self.current_state])
@@ -61,6 +62,7 @@ class QuillAndDaggerStateMachine:
             # if the scheduled state switch is on the same day, it will be scheduled
             time.sleep(distance.seconds)
             last_time = datetime.now(self.timezone).replace(microsecond=0)
+            self.logger.info(f"Checking for possible state switch..")
             if target_time < last_time:
                 should_run = False
                 self.switch_state()

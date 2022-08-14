@@ -132,13 +132,11 @@ def index():
 def authenticate():
     if is_authenticated_session(session):
         return redirect("/")
-    logger.info("incoming request")
     if request.method == 'POST':
-        logger.info(f"received post")
-        logger.info(f"received auth")
+        logger.info("incoming authentication request")
         if "uid" in request.form:
             uuid = request.form.get("uid").strip()
-            logger.info(f"received {uuid}")
+            logger.info(f"{uuid} tries to authenticate")
             if uuid_db.has_value(uuid):
                 if alias_db.does_key_exist(uuid):
                     alias = alias_db.get(uuid)
