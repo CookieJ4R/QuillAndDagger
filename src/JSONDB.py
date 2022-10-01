@@ -43,6 +43,12 @@ class JSONDB:
     def get(self, key):
         return self.database[key]
 
+    def get_key(self, value):
+        for key in self.database.keys():
+            if self.database[key] == value:
+                return key
+        return None
+
     def does_value_exist(self, value):
         return value in self.database.values()
 

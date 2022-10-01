@@ -11,13 +11,13 @@
     <link rel="stylesheet" href="/static/qad.css" type="text/css">
 </head>
 <body class="text-center">
-<form method="post" action="/authenticate" class="bordered_form">
-    <h3 class="h3 mb-3 font-weight-normal">Please enter your ID!</h3>
-    <label class="sr-only" for="uid"></label><input type="text" id="uid" name="uid" placeholder="UUID"
-                                                    style="color: #1f2026;border-radius: 15px; width: 75%; height: 40px; background-image: linear-gradient(90deg, rgba(255,236,0,0.5), rgba(106,0,255,0.5)); border-width: 0;"><br>
-    <button class="btn btn-lg btn-secondary btn-block mt-3" type="submit" id="authenticate" name="authenticate">
-        Authenticate
-    </button>
-</form>
+<div>
+<a class="btn btn-lg btn-secondary btn-block mt-3" id="login" href="https://guard.timmorgner.de/login?returnURL=http://localhost:5000/authenticate">
+        Login with GUARD
+    </a>
+<br>
+<br>
+<h4 style="color: red">{{ error }}</h4>
+</div>
 </body>
 </html>
