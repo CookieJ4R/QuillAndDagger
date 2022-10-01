@@ -41,3 +41,7 @@ html{
         h1, h2, h3, h4, ol{
             color: white;
         }
+
+        #center_container {
+            height: 100%;
+        }

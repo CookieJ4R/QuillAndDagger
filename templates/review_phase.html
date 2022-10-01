@@ -41,10 +41,12 @@
             // Update the count down every 1 second
             scheduled_func = setInterval(calculate_timer, 1000);
             to_review_list.forEach(submission => document.getElementById("submission_review_list").innerHTML +=
-                `<div style='width: 75%;' class='container mb-2'>
-        <div class='row'>
-        <div class='col-7'>
+                `<div style='width: 100%;' class='container mb-2'>
+    <div class='row'>
+        <div class='col-9'>
+            <div style="display: block; text-align: start">
             <label for='reviews_${submission}' id='review_label_${submission}' style='color:white; font-size: x-large'>${submission}</label>
+            </div>
         </div>
         <div class='col-3'>
                 <select name='review_${submission}' id='review_${submission}' class='form-select'>
@@ -53,16 +55,22 @@
                     <option value='3'>3</option>
                     <option value='4'>4</option>
                     <option value='5'>5</option>
+                    <option value='6'>6</option>
+                    <option value='7'>7</option>
+                    <option value='8'>8</option>
+                    <option value='9'>9</option>
+                    <option value='10'>10</option>
                 </select>
          </div>
         </div>
     </div>`
             )
-            document.getElementById("submission_review_list").innerHTML += `<button class="btn btn-lg btn-secondary btn-block mt-2" type="submit" value="Submit">submit</button>`
+            document.getElementById("submission_review_list").innerHTML += `<button class="btn btn-lg btn-secondary btn-block mt-2" type="submit" value="Submit">Submit</button>`
         }
     </script>
 </head>
 <body>
+<div id="center_container">
 <div id="center">
     <h2 class="mb-4">{{ alias }}</h2>
     <h3 class="mb-2">Review phase</h3><br>
@@ -74,6 +82,7 @@
     <h4 class="mb-1">Ratings range from 1 (bad) to 5 (amazing)</h4><br>
     <form method="post" action="/review_phase" id="submission_review_list">
     </form>
+</div>
 </div>
 </body>
 </html>
