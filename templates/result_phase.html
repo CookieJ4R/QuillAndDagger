@@ -29,21 +29,38 @@
 
         let final_results = {{ results | tojson }};
         final_results = sort_object(final_results)
+        let index = 0
         window.onload = function () {
-            Object.keys(final_results).forEach(key => document.getElementById("results").innerHTML +=
-                `<li>${key} ${final_results[key]}</li>`)
+            Object.keys(final_results).forEach(key => {
+                index++;
+                document.getElementById("results").innerHTML +=
+                `<div class='row'>
+                    <div class='col-2' style="color: white; font-size: x-large; text-align: center">
+                        <b>${index}</b>
+                    </div>
+                    <div class='col-8' style="color: white; font-size: x-large">
+                        <b>${key}</b>
+                    </div>
+                    <div class='col-2' style="color: white; font-size: x-large">
+                        <b>${final_results[key]}</b>
+                    </div>
+                </div>`})
         }
-
-
     </script>
 </head>
 <body>
 <div id="center">
     <h2>{{ alias }}</h2>
     <h3>Results</h3>
-    <ol id="results">
-    </ol>
-    <h4>Thanks for participating!</h4>
+    <div class='row mb-2'>
+        <div class="col-2" style="color: white"><b>Place</b></div>
+        <div class="col-8" style="color: white"><b>Name</b></div>
+        <div class="col-2" style="color: white"><b>Score</b></div>
+    </div>
+    <div id="results">
+
+    </div>
+    <h4 class="mt-4">Thanks for participating!</h4>
 </div>
 </body>
 </html>
