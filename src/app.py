@@ -134,7 +134,7 @@ def authenticate():
     if request.method == 'GET':
         if "GUARDTOKEN" in request.args:
             token = request.args["GUARDTOKEN"]
-            response = requests.get("https://guard.timmorgner.de/sso?GUARDTOKEN=" + token)
+            response = requests.get("https://guard.example.com/sso?GUARDTOKEN=" + token)
             if response.status_code == 200:
                 username = response.json()["username"]
                 if alias_db.does_key_exist(username):
