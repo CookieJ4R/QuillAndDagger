@@ -21,7 +21,7 @@ from QuillAndDaggerStateMachine import QuillAndDaggerStateMachine, PREPARATION_S
 from SingleValueJSONDB import SingleValueJSONDB
 from util import allowed_file, is_authenticated_session, get_list_of_submission_names_for, build_results
 
-app = Flask(__name__, template_folder='../templates')
+app = Flask(__name__, template_folder='../templates', static_folder='../static')
 app.secret_key = "ijwo0hDFj2JKD7sf09hfoinin2"
 
 logger = logging.getLogger("QuillAndDagger")
