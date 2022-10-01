@@ -3,7 +3,7 @@ Quill and Dagger is a server-like software that allows hosting small-scale writi
 writing and review phase.
 
 It uses python with the flask framework to serve templated webpages for the individual phases.
-Users will need a GUARD account on a GUARD System (see: [https://github.com/Baspla/GUARD])(see: [How to use](#how-to-use)).
+Users will need a GUARD account on a GUARD System (see: https://github.com/Baspla/GUARD).
 
 ## How to use:
 1. Change the Settings in the WEBSERVER-Section of the 'app_config.ini' to fit your configuration
