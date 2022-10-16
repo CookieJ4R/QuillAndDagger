@@ -23,7 +23,7 @@ def get_list_of_submission_names_for(path, session) -> list:
     return file_list
 
 
-def build_results(review_db: JSONDB, alias_db: JSONDB) -> dict:
+def build_results(review_db: JSONDB, alias_db: JSONDB, uuid_mapping_db: JSONDB) -> dict:
     logger.info("Building results...")
     results = {}
     for review in review_db.database:
@@ -32,7 +32,7 @@ def build_results(review_db: JSONDB, alias_db: JSONDB) -> dict:
         for score in scores:
             final_score += score
         final_score = round(final_score / len(scores), 2)
-        key = review + "|" + alias_db.get_key(review)
+        key = review + "|" + uuid_mapping_db.get(alias_db.get_key(review))
         results[key] = final_score
     return dict(sorted(results.items(), key=lambda item: item[1], reverse=True))
 

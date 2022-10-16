@@ -2,7 +2,6 @@ import logging
 import os
 import sys
 import time
-from datetime import datetime
 from os.path import basename
 from threading import Thread
 from zipfile import ZipFile
@@ -22,9 +21,9 @@ from SingleValueJSONDB import SingleValueJSONDB
 from util import allowed_file, is_authenticated_session, get_list_of_submission_names_for, build_results
 
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
-app.secret_key = "ijwo0hDFj2JKD7sf09hfoinin2"
 
 logger = logging.getLogger("QuillAndDagger")
+
 
 @app.route("/preparation_phase")
 def build_preparation_stage_page():
@@ -48,14 +47,15 @@ def build_writing_stage_page():
                 return "Writing phase is already finished. Your submission as rejected - Please reload the page!"
             f = request.files['submission']
             if not allowed_file(f.filename):
-                return render_template("writing_phase.html", alias=session['alias'], prompt=prompt_manager.active_prompt, 
-                target_date=state_machine.get_current_time_target(), notification_id=2)
+                return render_template("writing_phase.html", alias=session['alias'],
+                                       prompt=prompt_manager.active_prompt,
+                                       target_date=state_machine.get_current_time_target(), notification_id=2)
             if not os.path.exists(config["APP"]["submission_folder"]):
                 os.mkdir(config["APP"]["submission_folder"])
             f.save(os.path.join(config["APP"]["submission_folder"], secure_filename(session["alias"] + ".pdf")))
     if os.path.exists(os.path.join(config["APP"]["submission_folder"], secure_filename(session["alias"] + ".pdf"))):
         return render_template("writing_phase.html", alias=session['alias'], prompt=prompt_manager.active_prompt,
-                           target_date=state_machine.get_current_time_target(), notification_id=1)
+                               target_date=state_machine.get_current_time_target(), notification_id=1)
     return render_template("writing_phase.html", alias=session['alias'], prompt=prompt_manager.active_prompt,
                            target_date=state_machine.get_current_time_target(), notification_id=0)
 
@@ -87,12 +87,13 @@ def build_result_stage_page():
         return redirect("/authenticate")
     if state_machine.get_current_state() != RESULT_STAGE:
         return redirect("/")
-    results = build_results(review_db, alias_db)
+    results = build_results(review_db, alias_db, uuid_mapping_db)
     return render_template("result_phase.html", alias=session['alias'], results=results)
 
 
 def build_authentication_page(error_msg):
-    return render_template("authentication.html", error=error_msg)
+    return render_template("authentication.html", error=error_msg, guard_url=config["APP"]["guard_url"],
+                           guard_return_url=config["APP"]["guard_return_url"])
 
 
 @app.route('/download_files')
@@ -134,23 +135,26 @@ def authenticate():
     if request.method == 'GET':
         if "GUARDTOKEN" in request.args:
             token = request.args["GUARDTOKEN"]
-            response = requests.get("https://guard.example.com/sso?GUARDTOKEN=" + token)
+            response = requests.get(config["APP"]["guard_url"] + "/sso?GUARDTOKEN=" + token)
             if response.status_code == 200:
-                username = response.json()["username"]
-                if alias_db.does_key_exist(username):
-                    alias = alias_db.get(username)
+                uuid = response.json()["uuid"]
+                display_name = response.json()["displayname"]
+                # works because of the implementation. Will replace old displayname
+                uuid_mapping_db.put(uuid, display_name)
+                if alias_db.does_key_exist(uuid):
+                    alias = alias_db.get(uuid)
                     logger.info(f"Authenticated! {alias} logged in!")
                     session['alias'] = alias
                 else:
                     if not (state_machine.get_current_state() == PREPARATION_STAGE or
                             state_machine.get_current_state() == WRITING_STAGE):
-                        logger.info(f"{username} tried to join a running competition!")
+                        logger.info(f"{uuid} tried to join a running competition!")
                         auth_error_msg = "Sorry you cant join now. The competition has already begun!"
                         return build_authentication_page(error_msg=auth_error_msg)
 
                     logger.info("User without alias tries to authenticate. Generating new alias...")
                     alias = alias_generator.generate_alias(alias_db.database.values())
-                    alias_db.put(username, alias)
+                    alias_db.put(uuid, alias)
                     session['alias'] = alias
                 return redirect("/")
             else:
@@ -182,6 +186,7 @@ if __name__ == '__main__':
     authentication_error_msg = ""
     config = configparser.ConfigParser()
     config.read("data/app_config.ini")
+    app.secret_key = config["APP"]["secret_token"]
     prompt_manager = PromptManager()
     state_machine = QuillAndDaggerStateMachine(prompt_manager,
                                                config["STATE_MACHINE"]["preparation_phase_end"],
@@ -201,6 +206,7 @@ if __name__ == '__main__':
         state_machine.current_state = RESULT_STAGE
 
     alias_db = JSONDB("alias_db")
+    uuid_mapping_db = JSONDB("uuid_mapping_db")
     review_db = JSONDB("review_db")
     review_completion_db = SingleValueJSONDB("review_completion_db")
     server_thread = Thread(target=serve, args=[app], kwargs={'host': config["WEBSERVER"]["ip"],
